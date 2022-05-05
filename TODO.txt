@@ -3,6 +3,7 @@ make frontent(obvious one)
 *extra: make spend analysis or cashback function
 better work with bds
 UML(both of them)
+add transactions(and cancelling them)
 
 problems:
 if user is veritified, his last accounts are still simple
