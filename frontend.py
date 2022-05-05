@@ -8,13 +8,13 @@ from PyQt6.QtWidgets import (
     QMainWindow,
 )
 
-from PyQt6.QtCore import Qt
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self = AuthorizeWindow() 
-        
+
+
 class AuthorizeWindow(QWidget):
     def __init__(self):
         super().__init__()
