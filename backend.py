@@ -25,8 +25,8 @@ class Client:
                 self.passport_series, self.passport_number, self.phone_number, self.password)
 
     def write_to_bd(self):
-        if bank_data_base.get_client_params(self.phone_number) is None:
-            bank_data_base.add_new_account(self.params())
+        if bank_data_base.get_client_params(self.phone_number) is not None:
+            bank_data_base.add_new_client(self.params())
 
 
 "======================== there are accounts =================================="
@@ -75,6 +75,7 @@ class KazachestvoDeposit(Deposit):
         self.phone_number = client.phone_number
         self.term = self.new_deposit_term()
         self.id = bank_data_base.new_account_id()
+        self.write_to_bd()
 
     def get_term(self):
         return self.term
@@ -88,11 +89,13 @@ class KazachestvoDeposit(Deposit):
         if self.balance < write_off:
             raise Exception
         self.balance -= write_off
+        self.write_to_bd()
 
     def deposit(self, deposit_amount):
         if self.balance + deposit_amount > self.max_deposit:
             raise Exception
         self.balance += deposit_amount
+        self.write_to_bd()
 
     @staticmethod
     def new_deposit_term():
@@ -111,7 +114,7 @@ class KazachestvoDeposit(Deposit):
         if bank_data_base.get_account_params(self.id) is None:
             bank_data_base.add_new_account(self.params())
         else:
-            pass    # TODO
+            bank_data_base.set_balance(self.balance, self.id)
 
 
 class KazachestvoCredit(Credit):
@@ -123,6 +126,7 @@ class KazachestvoCredit(Credit):
             self.max_credit = constants.MaxKazachestvoVerifiedCredit
         else:
             self.max_credit = constants.MaxKazachestvoNotVerifiedCredit
+        self.write_to_bd()
 
     def withdraw(self, write_off):
         if -(self.balance - write_off) > self.max_credit:
@@ -130,12 +134,14 @@ class KazachestvoCredit(Credit):
         if self.balance < write_off:
             pass
         self.balance -= write_off
-
-    def get_id(self):
-        return self.id
+        self.write_to_bd()
 
     def deposit(self, deposit_amount):
         self.balance += deposit_amount
+        self.write_to_bd()
+
+    def get_id(self):
+        return self.id
 
     def get_debt(self) -> int:
         return max(0, -self.balance)
@@ -147,7 +153,7 @@ class KazachestvoCredit(Credit):
         if bank_data_base.get_account_params(self.id) is None:
             bank_data_base.add_new_account(self.params())
         else:
-            pass    # TODO
+            bank_data_base.set_balance(self.balance, self.id)
 
 
 class KazachestvoDebit(Debit):
@@ -156,19 +162,22 @@ class KazachestvoDebit(Debit):
         self.balance = 0
         self.phone_number = client.phone_number
         self.id = bank_data_base.new_account_id()
+        self.write_to_bd()
 
     def withdraw(self,  write_off):
         if self.balance < write_off:
             raise Exception
         self.balance -= write_off
-
-    def get_id(self):
-        return self.id
+        self.write_to_bd()
 
     def deposit(self, deposit_amount):
         if self.balance + deposit_amount > self.max_balance:
             raise Exception
         self.balance += deposit_amount
+        self.write_to_bd()
+
+    def get_id(self):
+        return self.id
 
     @staticmethod
     def debit_max_balance(client):
@@ -180,10 +189,10 @@ class KazachestvoDebit(Debit):
         return self.id, self.phone_number, 'debit', self.balance, str(timedelta())
 
     def write_to_bd(self):
-        if bank_data_base.get_account_params(self.id) is None:
+        if not bank_data_base.account_exists(self.id):
             bank_data_base.add_new_account(self.params())
         else:
-            pass    # TODO
+            bank_data_base.set_balance(self.balance, self.id)
 
 
 "======================== there are fabrics ==================================="
@@ -228,7 +237,5 @@ bank_data_base = BankDataBase()
 me = Client(('Дмитрий', 'Сутый', 'ул.Римского-Корсакова, дом8', 1234, 172702, 896895786008, 'w4uthLuh'))
 me.write_to_bd()
 account = KazachestvoFactory.create_debit(me)
-print(account.balance)
+new_account = KazachestvoFactory.create_deposit(me, 100500)
 account.deposit(10)
-print(account.balance)
-account.write_to_bd()

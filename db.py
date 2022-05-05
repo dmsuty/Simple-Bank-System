@@ -27,6 +27,8 @@ add_to_accounts_team = "insert into accounts values (?, ?, ?, ?, ?)"
 
 add_to_transactions_team = "insert into transactions value (?, ?, ?, ?)"
 
+update_account_balance = "update accounts set balance = ? where id = ?"
+
 
 class BankDataBase:
     def __init__(self):
@@ -47,7 +49,6 @@ class BankDataBase:
         self.connection.commit()
 
     def add_new_account(self, params):
-        print(params)
         self.cursor.execute(add_to_accounts_team, params)
         self.connection.commit()
 
@@ -61,8 +62,15 @@ class BankDataBase:
         if len(row):
             return row[0]
 
-    def set_balance(self, id, new_balance):
-        pass    # TODO
+    def account_exists(self, id):
+        return self.get_account_params(id) is not None
+
+    def client_exists(self, phone_number):
+        return self.get_client_params(phone_number) is not None
+
+    def set_balance(self, new_balance, id):
+        self.cursor.execute(update_account_balance, (new_balance, id))
+        self.connection.commit()
 
     def close(self):
         self.connection.close()
