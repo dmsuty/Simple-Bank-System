@@ -3,19 +3,19 @@ import random
 
 
 clients_create_team = """CREATE TABLE IF NOT EXISTS clients (first_name, second_name,
-                       address, passport_serie, passport_number,
+                       address, passport_series, passport_number,
                        phone_number, password)"""
 
 accounts_create_team = """CREATE TABLE IF NOT EXISTS accounts (id, phone_number,
-                        account_type, money_amount, comission, term)"""
+                        account_type, balance, term)"""
 
-transactions_create_team = """CREATE TABLE IF NOT EXISTS trnsactions (transaction_id, 
+transactions_create_team = """CREATE TABLE IF NOT EXISTS transactions (transaction_id, 
                                                             first_id, second_id, money)"""
 
-select_client_team = """SELECT first_name, second_name, address, passport_serie, passport_number,
-                      phone_number, password, FROM clients WHERE phone_number = ?"""
+select_client_team = """SELECT first_name, second_name, address, passport_series, passport_number,
+                      phone_number, password FROM clients WHERE phone_number = ?"""
 
-select_account_team = """SELECT id, phone_number, account_type, money_amount, comission, term
+select_account_team = """SELECT id, phone_number, account_type, balance, term
                        FROM accounts WHERE id = ?"""
 
 select_transaction_team = """SELECT transaction_id, first_id, second_id, money, 
@@ -23,7 +23,7 @@ select_transaction_team = """SELECT transaction_id, first_id, second_id, money,
 
 add_to_clients_team = "insert into clients values (?, ?, ?, ?, ?, ?, ?)"
 
-add_to_accounts_team = "insert into clients values (?, ?, ?, ?, ?, ?)"
+add_to_accounts_team = "insert into accounts values (?, ?, ?, ?, ?)"
 
 add_to_transactions_team = "insert into transactions value (?, ?, ?, ?)"
 
@@ -47,18 +47,22 @@ class BankDataBase:
         self.connection.commit()
 
     def add_new_account(self, params):
+        print(params)
         self.cursor.execute(add_to_accounts_team, params)
         self.connection.commit()
 
     def get_client_params(self, phone_number):
-        row = self.cursor.execute(select_client_team, (phone_number)).fetchall()
+        row = self.cursor.execute(select_client_team, (phone_number,)).fetchall()
         if len(row):
             return row[0]
 
     def get_account_params(self, account_id):
-        row = self.cursor.execute(select_account_team, (account_id)).fetchall()
+        row = self.cursor.execute(select_account_team, (account_id,)).fetchall()
         if len(row):
             return row[0]
+
+    def set_balance(self, id, new_balance):
+        pass    # TODO
 
     def close(self):
         self.connection.close()

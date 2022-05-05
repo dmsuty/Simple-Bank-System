@@ -24,6 +24,10 @@ class Client:
         return (self.first_name, self.second_name, self.address,
                 self.passport_series, self.passport_number, self.phone_number, self.password)
 
+    def write_to_bd(self):
+        if bank_data_base.get_client_params(self.phone_number) is None:
+            bank_data_base.add_new_account(self.params())
+
 
 "======================== there are accounts =================================="
 
@@ -100,6 +104,15 @@ class KazachestvoDeposit(Deposit):
             return constants.MaxKazachestvoVerifiedDeposit
         return constants.MaxKazachestvoNotVerifiedDeposit
 
+    def params(self):
+        return self.id, self.phone_number, 'deposit', self.balance, str(self.term)
+
+    def write_to_bd(self):
+        if bank_data_base.get_account_params(self.id) is None:
+            bank_data_base.add_new_account(self.params())
+        else:
+            pass    # TODO
+
 
 class KazachestvoCredit(Credit):
     def __init__(self, client):
@@ -127,10 +140,19 @@ class KazachestvoCredit(Credit):
     def get_debt(self) -> int:
         return max(0, -self.balance)
 
+    def params(self):
+        return self.id, self.phone_number, 'credit', self.balance, str(timedelta())
+
+    def write_to_bd(self):
+        if bank_data_base.get_account_params(self.id) is None:
+            bank_data_base.add_new_account(self.params())
+        else:
+            pass    # TODO
+
 
 class KazachestvoDebit(Debit):
     def __init__(self, client):
-        self.max_balance = self.max_balance(client)
+        self.max_balance = self.debit_max_balance(client)
         self.balance = 0
         self.phone_number = client.phone_number
         self.id = bank_data_base.new_account_id()
@@ -144,15 +166,24 @@ class KazachestvoDebit(Debit):
         return self.id
 
     def deposit(self, deposit_amount):
-        if self.balance + deposit_amount > self.max_balance():
+        if self.balance + deposit_amount > self.max_balance:
             raise Exception
         self.balance += deposit_amount
 
     @staticmethod
-    def max_balance(client):
+    def debit_max_balance(client):
         if client.is_verified():
             return constants.MaxKazachestvoVerifiedDebitBalance
         return constants.MaxKazachestvoNotVerifiedDebitBalance
+
+    def params(self):
+        return self.id, self.phone_number, 'debit', self.balance, str(timedelta())
+
+    def write_to_bd(self):
+        if bank_data_base.get_account_params(self.id) is None:
+            bank_data_base.add_new_account(self.params())
+        else:
+            pass    # TODO
 
 
 "======================== there are fabrics ==================================="
@@ -160,37 +191,44 @@ class KazachestvoDebit(Debit):
 
 class AbstractAccountFactory(ABC):
     @staticmethod
-    def create_deposit(self, client, balance) -> Deposit:
+    def create_deposit(client, balance) -> Deposit:
         pass
 
     @staticmethod
-    def create_credit(self, client) -> Credit:
+    def create_credit(client) -> Credit:
         pass
 
     @staticmethod
-    def create_debit(self, client) -> Debit:
+    def create_debit(client) -> Debit:
         pass
 
 
 class KazachestvoFactory(AbstractAccountFactory):
     @staticmethod
-    def create_deposit(self, client, balance) -> Deposit:
+    def create_deposit(client, balance) -> Deposit:
         return KazachestvoDeposit(client, balance)
 
     @staticmethod
-    def create_credit(self, client) -> Credit:
+    def create_credit(client) -> Credit:
         return KazachestvoCredit(client)
 
     @staticmethod
-    def create_debit(self, client) -> Debit:
+    def create_debit(client) -> Debit:
         return KazachestvoDebit(client)
 
 
 "================ Transaction ========================="
 
-class Transaction:
-    def __init__(self, first_account, second_account, money):
-        bank_data_base.add_new_transaction()
+ # class Transaction:
+ #    def __init__(self, first_account, second_account, money):
+ #        bank_data_base.add_new_transaction()
 
 
 bank_data_base = BankDataBase()
+me = Client(('Дмитрий', 'Сутый', 'ул.Римского-Корсакова, дом8', 1234, 172702, 896895786008, 'w4uthLuh'))
+me.write_to_bd()
+account = KazachestvoFactory.create_debit(me)
+print(account.balance)
+account.deposit(10)
+print(account.balance)
+account.write_to_bd()

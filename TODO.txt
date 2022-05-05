@@ -1,0 +1,8 @@
+make private fields later
+make frontent(obvious one)
+*extra: make spend analysis or cashback function
+better work with bds
+UML(both of them)
+
+problems:
+if user is veritified, his last accounts are still simple
