@@ -1,9 +1,9 @@
 make private fields later
 make frontent(obvious one)
 *extra: make spend analysis or cashback function
-better work with bds
 UML(both of them)
-add transactions(and cancelling them)
+exceptions_safety
 
 problems:
 if user is veritified, his last accounts are still simple
+
