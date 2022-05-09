@@ -1,0 +1,9 @@
+make private fields later
+make frontent(obvious one)
+*extra: make spend analysis or cashback function
+UML(both of them)
+exceptions_safety
+
+problems:
+if user is veritified, his last accounts are still simple
+
